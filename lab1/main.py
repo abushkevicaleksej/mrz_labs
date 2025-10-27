@@ -1,7 +1,9 @@
 ###############################
 # Лабораторная работа №3 по дисциплине МРЗвИС
+# Вариант 10: Реализовать модель линейной рециркуляционной сети с адаптивным коэффициентом обучения с ненормированными весами.
 # Выполнил студент группы 221701 БГУИР Абушкевич Алексей Александрович
 # Главный файл программы
+# Дата 25.10.2025
 
 import numpy as np
 
@@ -15,7 +17,7 @@ compressor = Compressor(
     block_size=(BLOCK_HEIGHT, BLOCK_WIDTH)
 )
 
-image_path = "D:\\Repos\\src\\mrz_labs\\lab1\\pic\\1024.bmp"
+image_path = "pic\\forest512.bmp"
 
 compressor.shape = cv2.imread(image_path).shape[:2]
 
@@ -37,7 +39,7 @@ actual_compression_ratio = original_size / compressed_size
 
 print(f"Размер исходного изображения: {original_size} байт")
 print(f"Размер сжатых данных: {compressed_size} байт")
-print(f"Коэффициент сжатия: {actual_compression_ratio:.2f}:1")
+print(f"Коэффициент сжатия: {actual_compression_ratio:.2f}")
 
 cv2.imshow('Original and reconstructed image', combined_horizontal)
 cv2.waitKey(0)

@@ -1,7 +1,10 @@
 ###############################
 # Лабораторная работа №3 по дисциплине МРЗвИС
+# Вариант 10: Реализовать модель линейной рециркуляционной сети с адаптивным коэффициентом обучения с ненормированными весами.
 # Выполнил студент группы 221701 БГУИР Абушкевич Алексей Александрович
 # Файл, содержащий реализацию вспомогательных функций
+# Дата 25.10.2025
+
 import sys
 
 import numpy as np
@@ -9,8 +12,8 @@ from scipy.stats import normaltest, truncnorm, shapiro
 
 from cfg import BLOCK_WIDTH, BLOCK_HEIGHT
 
-def adaptive_a_func(arr) -> float:
-    quad_sum = np.sum(arr ** 2) + 1
+def adaptive_a_func(arr, c=1000) -> float:
+    quad_sum = np.sum(arr ** 2) + c
     return 1 / (quad_sum)
 
 def flatten(rectangles: np.ndarray) -> np.ndarray:
@@ -112,7 +115,7 @@ def get_compressed_size(compressed_data):
     if 'W_f' in compressed_data:
         total_size += compressed_data['W_f'].nbytes
 
-    total_size += sys.getsizeof(compressed_data) * 2
+    total_size += sys.getsizeof(compressed_data)
 
     return total_size
 
