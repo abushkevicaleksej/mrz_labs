@@ -1,3 +1,8 @@
+###############################
+# Лабораторная работа №3 по дисциплине МРЗвИС
+# Выполнил студент группы 221701 БГУИР Абушкевич Алексей Александрович
+# Главный файл программы
+
 import sys
 
 import numpy as np
@@ -29,7 +34,7 @@ compressor = Compressor(
     block_size=(BLOCK_HEIGHT, BLOCK_WIDTH)
 )
 
-image_path = "pic/256.bmp"
+image_path = "pic\\color512.bmp"
 
 compressor.shape = cv2.imread(image_path).shape[:2]
 
@@ -44,8 +49,6 @@ final_image = denormalize_image(reconstructed_image)
 original_image = cv2.imread(image_path)
 
 combined_horizontal = np.hstack((original_image, final_image))
-
-compressed_data = compressor.compress(image_path)
 
 original_size = original_image.nbytes
 compressed_size = get_compressed_size(compressed_data)
