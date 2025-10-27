@@ -2,8 +2,10 @@
 # Лабораторная работа №3 по дисциплине МРЗвИС
 # Выполнил студент группы 221701 БГУИР Абушкевич Алексей Александрович
 # Файл, содержащий реализацию вспомогательных функций
+import sys
 
 import numpy as np
+from scipy.stats import normaltest, truncnorm, shapiro
 
 from cfg import BLOCK_WIDTH, BLOCK_HEIGHT
 
@@ -97,3 +99,30 @@ def assemble_from_blocks(blocks, original_shape):
             rect_idx += 1
 
     return reconstructed
+
+def get_compressed_size(compressed_data):
+    total_size = 0
+
+    if 'compressed_blocks' in compressed_data:
+        total_size += compressed_data['compressed_blocks'].nbytes
+
+    if 'W_b' in compressed_data:
+        total_size += compressed_data['W_b'].nbytes
+
+    if 'W_f' in compressed_data:
+        total_size += compressed_data['W_f'].nbytes
+
+    total_size += sys.getsizeof(compressed_data) * 2
+
+    return total_size
+
+def check_normality(arr, alpha = 0.05) -> bool:
+    if len(arr) < 3:
+        return True 
+    
+    statistic, p_value = shapiro(arr)
+    return p_value > alpha
+
+def truncated_normal(shape, mean=0, std=1, clip=3):
+    weights = np.random.normal(mean, std, size=shape).astype(np.float32)
+    return np.clip(weights, -clip*std, clip*std)

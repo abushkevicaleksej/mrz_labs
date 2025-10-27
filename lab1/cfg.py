@@ -4,7 +4,7 @@
 # Файл, содержащий конфигурацию основных переменных программы
 
 EPOCHS = 25
-MAX_ERROR = 400
+MAX_ERROR = 800
 P = 15
-BLOCK_HEIGHT = 10
-BLOCK_WIDTH = 10
+BLOCK_HEIGHT = 5
+BLOCK_WIDTH = 5

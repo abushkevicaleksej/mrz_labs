@@ -3,38 +3,19 @@
 # Выполнил студент группы 221701 БГУИР Абушкевич Алексей Александрович
 # Главный файл программы
 
-import sys
-
 import numpy as np
 
 import cv2
 
 from compressor import Compressor
-from utils import denormalize_image
+from utils import denormalize_image, get_compressed_size
 from cfg import BLOCK_WIDTH, BLOCK_HEIGHT
-
-
-def get_compressed_size(compressed_data):
-    total_size = 0
-
-    if 'compressed_blocks' in compressed_data:
-        total_size += compressed_data['compressed_blocks'].nbytes
-
-    if 'W_b' in compressed_data:
-        total_size += compressed_data['W_b'].nbytes
-
-    if 'W_f' in compressed_data:
-        total_size += compressed_data['W_f'].nbytes
-
-    total_size += sys.getsizeof(compressed_data) * 2
-
-    return total_size
 
 compressor = Compressor(
     block_size=(BLOCK_HEIGHT, BLOCK_WIDTH)
 )
 
-image_path = "pic\\color512.bmp"
+image_path = "D:\\Repos\\src\\mrz_labs\\lab1\\pic\\1024.bmp"
 
 compressor.shape = cv2.imread(image_path).shape[:2]
 

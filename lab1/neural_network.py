@@ -7,7 +7,7 @@ import math
 
 import numpy as np
 
-from utils import adaptive_a_func
+from utils import adaptive_a_func, check_normality, truncated_normal
 
 class NeuralNetwork:
     def __init__(self):
@@ -16,12 +16,15 @@ class NeuralNetwork:
 
         self.adaptive_calc_func = None
 
-    def init_weights(self, input_length, compress_ratio):
+    def init_weights(self, input_length, p):
         input_size = input_length
-        hidden_size = int(input_size / compress_ratio)
+        hidden_size = p
 
-        self.W_f = np.random.uniform(-0.001, 0.001, (input_size, hidden_size)).astype(np.float32)
-        self.W_b = np.random.uniform(-0.001, 0.001, (hidden_size, input_size)).astype(np.float32)
+        self.W_f = truncated_normal((input_size, hidden_size), std=0.001/3)
+        self.W_b = truncated_normal((hidden_size, input_size), std=0.001/3)   
+
+        print(f'Проверка нормальности распределения для W_f: {check_normality(self.W_f)}')
+        print(f'Проверка нормальности распределения для W_b: {check_normality(self.W_b)}')
 
     def train(self, X, max_epochs: int, max_error: float):
         epoch = 1
