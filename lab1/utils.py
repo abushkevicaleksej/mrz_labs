@@ -1,7 +1,7 @@
 ###############################
 # Лабораторная работа №3 по дисциплине МРЗвИС
 # Вариант 10: Реализовать модель линейной рециркуляционной сети с адаптивным коэффициентом обучения с ненормированными весами.
-# Выполнил студент группы 221701 БГУИР Абушкевич Алексей Александрович
+# Выполнил студенты группы 221701 БГУИР Абушкевич Алексей Александрович и Юркевич Марианна Сергеевна
 # Файл, содержащий реализацию вспомогательных функций
 # Дата 25.10.2025
 
@@ -109,13 +109,13 @@ def get_compressed_size(compressed_data):
     if 'compressed_blocks' in compressed_data:
         total_size += compressed_data['compressed_blocks'].nbytes
 
-    if 'W_b' in compressed_data:
-        total_size += compressed_data['W_b'].nbytes
-
-    if 'W_f' in compressed_data:
-        total_size += compressed_data['W_f'].nbytes
-
-    total_size += sys.getsizeof(compressed_data)
+    # if 'W_b' in compressed_data:
+    #     total_size += compressed_data['W_b'].nbytes
+    #
+    # if 'W_f' in compressed_data:
+    #     total_size += compressed_data['W_f'].nbytes
+    #
+    # total_size += sys.getsizeof(compressed_data)
 
     return total_size
 

@@ -5,8 +5,8 @@
 # Файл, содержащий конфигурацию основных переменных программы
 # Дата 25.10.2025
 
-EPOCHS = 100
-MAX_ERROR = 500
-P = 12
-BLOCK_HEIGHT = 7
-BLOCK_WIDTH = 7
+EPOCHS = 1000
+MAX_ERROR = 1000
+P = 1
+BLOCK_HEIGHT = 20
+BLOCK_WIDTH = 20
