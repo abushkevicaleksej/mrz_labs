@@ -22,6 +22,10 @@ def test_symbol_recognition(symbols, test_symbol, noise_level=0.3, noise_type="b
     n_neurons = patterns.shape[1]
     
     network = HopfieldNetwork(n_neurons)
+    
+    print(n_neurons)
+    print(f"Ёмкость сети составляет: {n_neurons / 4 * np.log(n_neurons)}")
+
     network.train(patterns)
     
     print("Проверка устойчивости эталонов:")
