@@ -1,22 +1,21 @@
-from utils import test_symbol_recognition
+from utils import test_symbol_recognition, get_absolute_path
 
 if __name__ == "__main__":
-    training_symbols = ['A', 'B', 'pics/dog.jpg']
+    training_set = [
+        get_absolute_path('pics/dog.jpg'),
+        get_absolute_path('pics/poison.jpeg')
     
-    test_cases = [
-        ('A', 0.1, "random"),
-        ('B', 0.1, "random"),
-        ('pics/dog.jpg', 0.2, "both"),
     ]
     
-    for test_symbol, noise_level, noise_type in test_cases:
-        if test_symbol in training_symbols:
-            result, iterations = test_symbol_recognition(
-                training_symbols, 
-                test_symbol, 
-                noise_level, 
-                noise_type,
-                image_size=(20, 20) 
-            )
-
-    # TODO получение количества итераций до достижения состояния релаксации
+    test_cases = [
+        (get_absolute_path('pics/dog.jpg'), 0.95, "both", 100),
+    ]
+    
+    for test_file, noise_level, noise_type, max_iter in test_cases:
+        result, iterations, success, matched = test_symbol_recognition(
+            training_set, 
+            test_file, 
+            noise_level, 
+            noise_type,
+            max_iterations=max_iter
+        )
