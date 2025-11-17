@@ -25,7 +25,12 @@ class ImageProcessor:
         draw.text((x, y), symbol, font=font, fill=0)
         
         return img
-    
+
+    def load_image(self, file_path):
+        img = Image.open(file_path).convert('L')
+        img = img.resize(self.image_size)
+        return img
+
     def image_to_vector(self, image):
 
         img_array = np.array(image)

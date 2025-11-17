@@ -1,10 +1,12 @@
 from utils import test_symbol_recognition
 
 if __name__ == "__main__":
-    training_symbols = ['A']
+    training_symbols = ['A', 'B', 'pics/dog.jpg']
     
     test_cases = [
         ('A', 0.1, "random"),
+        ('B', 0.1, "random"),
+        ('pics/dog.jpg', 0.2, "both"),
     ]
     
     for test_symbol, noise_level, noise_type in test_cases:
@@ -17,5 +19,4 @@ if __name__ == "__main__":
                 image_size=(20, 20) 
             )
 
-    # TODO обработка картинок
     # TODO получение количества итераций до достижения состояния релаксации
