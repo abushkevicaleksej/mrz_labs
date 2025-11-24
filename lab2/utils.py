@@ -27,7 +27,47 @@ def create_training_set(file_paths, image_size=None):
     if not patterns:
         raise ValueError("Не удалось загрузить ни одного изображения для обучения")
     
+    print(f'Всего тренировочных образов: {len(file_paths)}')
     return np.array(patterns), processor, successful_files
+
+def check_orthogonality(patterns):
+    n_patterns = patterns.shape[0]
+    print("Матрица скалярных произведений:")
+    for i in range(n_patterns):
+        row = []
+        for j in range(n_patterns):
+            dot_product = np.dot(patterns[i], patterns[j])
+            row.append(dot_product)
+        # print(f"  {row}")
+    
+    orthogonal_pairs = 0
+    for i in range(n_patterns):
+        for j in range(i+1, n_patterns):
+            if abs(np.dot(patterns[i], patterns[j])) < 1e-10:
+                orthogonal_pairs += 1
+                # print(f"Эталоны {i} и {j} ортогональны")
+    
+    print(f"Ортогональных пар: {orthogonal_pairs}/{n_patterns*(n_patterns-1)//2}")
+
+def create_hadamard_patterns(n):
+    """
+    Создает ортогональные эталонные образы используя матрицу Адамара.
+    Возвращает до n ортогональных векторов из ±1.
+    """
+    # Находим размер матрицы Адамара (должен быть степенью 2)
+    size = 1
+    while size < n:
+        size *= 2
+    
+    # Строим матрицу Адамара рекурсивно
+    H = np.array([[1]])
+    while H.shape[0] < size:
+        H = np.block([[H, H], [H, -H]])
+    
+    # Берем первые n строк (эталонов)
+    patterns = H[:n, :]
+    
+    return patterns
 
 def test_symbol_recognition(training_files, test_file, noise_level=0.3, noise_type="both", image_size=None, max_iterations=1000):
     patterns, processor, successful_training_files = create_training_set(training_files, image_size)
@@ -39,11 +79,23 @@ def test_symbol_recognition(training_files, test_file, noise_level=0.3, noise_ty
     
     network = HopfieldNetwork(n_neurons)
     
+    capacity = n_neurons - 1
+
     print(f"Количество нейронов: {n_neurons}")
     print(f"Размер изображения: {processor.image_size}")
-    print(f"Ёмкость сети составляет: {n_neurons / (4 * np.log(n_neurons)) if n_neurons > 1 else 0:.2f}")
+    print(f"Ёмкость сети составляет: {capacity if n_neurons > 1 else 0:.2f}")
+
+    if capacity < len(patterns):
+        print(f"Количество образов превышает ёмкость сети: {capacity:.2f} < {len(patterns)}")
+        # exit(1)
 
     network.train(patterns)
+
+    print("Проверка устойчивости эталонов:")
+    for i, file_path in enumerate(successful_training_files):
+        is_stable = network.check_stability(patterns[i])
+        print(f"  '{os.path.basename(file_path)}': {'устойчив' if is_stable else 'неустойчив'}")
+        print("\n")
     
     test_img = processor.load_image(test_file)
     
