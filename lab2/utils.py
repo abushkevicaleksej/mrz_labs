@@ -85,8 +85,8 @@ def test_symbol_recognition(training_files, test_file, noise_level=0.3, noise_ty
     print(f"Размер изображения: {processor.image_size}")
     print(f"Ёмкость сети составляет: {capacity if n_neurons > 1 else 0:.2f}")
 
-    if capacity < len(patterns):
-        print(f"Количество образов превышает ёмкость сети: {capacity:.2f} < {len(patterns)}")
+    # if capacity < len(patterns):
+        # print(f"Количество образов превышает ёмкость сети: {capacity:.2f} < {len(patterns)}")
         # exit(1)
 
     network.train(patterns)
