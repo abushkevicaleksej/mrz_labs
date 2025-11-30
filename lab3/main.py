@@ -37,15 +37,12 @@ if __name__ == "__main__":
     
     network.train(sequence, epochs=50000, learning_rate=0.001)
     
-    # Оценка качества
     test_loss = network.evaluate(sequence)
     print(f"\nСредняя ошибка на тестовой выборке: {test_loss:.6f}")
     
-    # Прогнозирование
     initial_window = sequence[:WIN_SIZE]
     predictions_normalized = network.predict(initial_window, steps=7)
     
-    # Денормализация прогнозов
     # predictions = denormalize_sequence(predictions_normalized, sequence)
     
     print(f"\nПрогнозируемые значения:")

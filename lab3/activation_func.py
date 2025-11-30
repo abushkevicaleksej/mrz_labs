@@ -8,19 +8,16 @@
 import numpy as np
 
 class ELU:
-    """Экспоненциальная линейная функция активации (ELU)"""
     
     def __init__(self, alpha: float = 1.0):
         self.alpha = alpha
         self.input = None
     
     def forward(self, x: np.ndarray) -> np.ndarray:
-        """Прямой проход через функцию активации"""
         self.input = x.copy()
         return np.where(x > 0, x, self.alpha * (np.exp(x) - 1))
     
     def backward(self, grad: np.ndarray) -> np.ndarray:
-        """Обратный проход через функцию активации"""
         if self.input is None:
             raise ValueError("Необходимо сначала выполнить прямой проход")
         
@@ -28,33 +25,27 @@ class ELU:
         return grad * derivative
 
 class Linear:
-    """Линейная функция активации (для эффекторного слоя)"""
     
     def __init__(self):
         self.input = None
     
     def forward(self, x: np.ndarray) -> np.ndarray:
-        """Прямой проход через функцию активации"""
         self.input = x.copy()
         return x
     
     def backward(self, grad: np.ndarray) -> np.ndarray:
-        """Обратный проход через функцию активации"""
         return grad
 
 class Tanh:
-    """Гиперболический тангенс в качестве функции активации"""
     
     def __init__(self):
         self.output = None
     
     def forward(self, x: np.ndarray) -> np.ndarray:
-        """Прямой проход через функцию активации"""
         self.output = np.tanh(x)
         return self.output
     
     def backward(self, grad: np.ndarray) -> np.ndarray:
-        """Обратный проход через функцию активации"""
         if self.output is None:
             raise ValueError("Необходимо сначала выполнить прямой проход")
         
