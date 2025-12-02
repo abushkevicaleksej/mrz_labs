@@ -1,16 +1,6 @@
-###############################
-# Лабораторная работа №5 по дисциплине МРЗвИС
-# Вариант 10: Реализовать модель сети Джордана-Элмана с экспоненциальной линейной функцией активации (ELU).
-# Выполнил студенты группы 221701 БГУИР Абушкевич Алексей Александрович и Юркевич Марианна Сергеевна
-# Файл с реализацией сети Джордана-Элмана
-# Дата 28.11.2025
-
 from typing import List
-
 import numpy as np
-
 from fclayer import FCLayer
-
 from activation_func import Tanh, ELU, Linear
 
 class JordanElmanNetwork:
@@ -21,16 +11,25 @@ class JordanElmanNetwork:
         self.hidden_size = hidden_size
         self.output_size = output_size
         self.context_reset = context_reset
-        self.elu_alpha = elu_alpha
         
         self.context_elman = np.zeros((hidden_size, 1))
         self.context_jordan = np.zeros((output_size, 1))
         
         input_total_size = window_size + hidden_size + output_size
         
-        self.hidden_layer = FCLayer(input_total_size, hidden_size, Tanh())
+        # 1. Создаем слой с ELU
+        self.hidden_layer = FCLayer(input_total_size, hidden_size, ELU(alpha=elu_alpha))
         
-        self.output_layer = FCLayer(hidden_size, output_size, ELU(alpha=elu_alpha))
+        # === КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: "Глушим" веса контекста ===
+        # Структура входа: [Window Inputs | Context Elman | Context Jordan]
+        # Мы оставляем веса для Window Inputs (первые window_size колонок) как есть (He init).
+        # А веса для Context (остальные колонки) делаем очень маленькими.
+        # Это позволяет сети сначала выучить прямую зависимость, не отвлекаясь на шум контекста.
+        self.hidden_layer.weights[:, window_size:] *= 0.01
+        # ====================================================
+
+        # Выходной слой линейный
+        self.output_layer = FCLayer(hidden_size, output_size, Linear())
         
         self.loss_history = []
     
@@ -46,99 +45,88 @@ class JordanElmanNetwork:
         ])
         
         hidden_output = self.hidden_layer.forward(combined_input)
-        
         self.context_elman = hidden_output.copy()
         
         network_output = self.output_layer.forward(hidden_output)
-        
         self.context_jordan = network_output.copy()
         
         return network_output.flatten()
     
     def backward(self, target: np.ndarray, learning_rate: float) -> float:
         target = target.reshape(-1, 1)
-        
         output_error = self.output_layer.output - target
-        output_grad = 2 * output_error
         
-        hidden_grad = self.output_layer.backward(output_grad, learning_rate)
+        # Обновляем выходной слой
+        hidden_grad = self.output_layer.backward(output_error, learning_rate)
         
+        # Обновляем скрытый слой
+        # Важно: градиенты для части входа, отвечающей за контекст, вычисляются,
+        # но в этой реализации (truncated BPTT) они не идут дальше назад во времени.
         _ = self.hidden_layer.backward(hidden_grad, learning_rate)
         
-        mse = 0.5 * np.mean(output_error ** 2)
-        return mse
+        return np.mean(output_error ** 2)
     
     def train(self, sequence: List[float], epochs: int, learning_rate: float = 0.01) -> None:
         n = len(sequence)
         
+        # Адаптивный learning rate
+        current_lr = learning_rate
+        
         for epoch in range(epochs):
             if self.context_reset:
                 self.reset_context()
-            else:
-                pass
             
             total_loss = 0
-            num_predictions = 0
             
+            # Обучение на всей последовательности
             for i in range(self.window_size, n - self.output_size):
                 input_window = sequence[i - self.window_size:i]
-                
                 targets = sequence[i:i + self.output_size]
                 
-                prediction = self.forward(np.array(input_window))
-                
-                loss = self.backward(np.array(targets), learning_rate)
-                
+                self.forward(np.array(input_window))
+                loss = self.backward(np.array(targets), current_lr)
                 total_loss += loss
-                num_predictions += 1
             
-            avg_loss = total_loss / num_predictions if num_predictions > 0 else 0
+            avg_loss = total_loss / (n - self.window_size)
             self.loss_history.append(avg_loss)
             
+            # Простой планировщик скорости обучения:
+            # Каждые 500 эпох уменьшаем скорость, чтобы точнее попасть в минимум
+            if epoch > 0 and epoch % 500 == 0:
+                current_lr *= 0.7
+                
             if epoch % 100 == 0:
-                print(f"Эпоха {epoch}, MSE: {avg_loss:.6f}")
-    
+                print(f"Эпоха {epoch}, MSE: {avg_loss:.8f}, LR: {current_lr:.6f}")
+
     def predict(self, initial_window: List[float], steps: int) -> List[float]:
-        if len(initial_window) != self.window_size:
-            raise ValueError(f"Начальное окно должно иметь размер {self.window_size}")
-        
+        # Для прогноза контекст лучше сбросить и "прогреть" заново или просто сбросить
         self.reset_context()
         
+        current_window = list(initial_window)
         predictions = []
-        current_window = initial_window.copy()
         
-        for step in range(steps):
-            window_array = np.array(current_window)
+        for _ in range(steps):
+            window_array = np.array(current_window[-self.window_size:])
+            pred = self.forward(window_array)
+            val = pred[0]
+            predictions.append(val)
+            current_window.append(val)
             
-            prediction = self.forward(window_array)
-            
-            predictions.extend(prediction)
-            
-            if self.output_size == 1:
-                current_window = current_window[1:] + [prediction[0]]
-            else:
-                current_window = current_window[1:] + [prediction[-1]]
-        
         return predictions
-    
+
     def evaluate(self, sequence: List[float]) -> float:
+        self.reset_context()
         n = len(sequence)
         total_loss = 0
-        num_predictions = 0
-        
-        self.reset_context()
+        count = 0
         
         for i in range(self.window_size, n - self.output_size):
             input_window = sequence[i - self.window_size:i]
-            
             targets = sequence[i:i + self.output_size]
             
             prediction = self.forward(np.array(input_window))
-            
             error = prediction - np.array(targets)
-            mse = 0.5 * np.mean(error ** 2) 
-            
-            total_loss += mse
-            num_predictions += 1
+            total_loss += np.sum(error ** 2)
+            count += 1
         
-        return total_loss / num_predictions if num_predictions > 0 else 0
+        return total_loss / count if count > 0 else 0

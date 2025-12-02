@@ -1,11 +1,9 @@
-###############################
 # Лабораторная работа №5 по дисциплине МРЗвИС
-# Вариант 10: Реализовать модель сети Джордана-Элмана с экспоненциальной линейной функцией активации (ELU).
+# Вариант 10: Реализовать модель сети Джордана-Элмана с экспоненциально-линейной функцией активации (ELU).
 # Выполнил студенты группы 221701 БГУИР Абушкевич Алексей Александрович и Юркевич Марианна Сергеевна
 # Файл с реализацией вспомогательных функций
 # Дата 28.11.2025
-
-from typing import List
+import numpy as np
 
 def generate_sequences() -> dict:
     sequences = {}
@@ -15,7 +13,7 @@ def generate_sequences() -> dict:
     sequences["harmonic"] = [1 / i for i in range(1, 16)]
     
     sequences["sine"] = [1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0]
-    
+
     sequences["increasing_zeros"] = [1]
     zeros_count = 1
     for i in range(14):
@@ -44,17 +42,30 @@ def generate_sequences() -> dict:
     
     return sequences
 
-def normalize_sequence(sequence: List[float]) -> List[float]:
+def log_transform_sequence(sequence):
+    """
+    Применяет логарифмическое преобразование к последовательности.
+    Используется для последовательностей с экспоненциальным ростом (Фибоначчи).
+    """
+    # Используем натуральный логарифм, добавляем 1 для избежания log(0)
+    return [np.log1p(x) for x in sequence]
+
+
+def inverse_log_transform(sequence_log):
+    """
+    Обратное логарифмическое преобразование.
+    """
+    return [np.expm1(x) for x in sequence_log]
+
+def normalize_sequence(sequence):
+    """Нормализует последовательность в диапазон [0, 1]"""
     min_val = min(sequence)
     max_val = max(sequence)
-    
     if max_val == min_val:
-        return [0.5] * len(sequence)
-    
-    return [(x - min_val) / (max_val - min_val) for x in sequence]
+        return [0.5] * len(sequence), min_val, max_val
+    normalized = [(x - min_val) / (max_val - min_val) for x in sequence]
+    return normalized, min_val, max_val
 
-def denormalize_sequence(normalized: List[float], original: List[float]) -> List[float]:
-    min_val = min(original)
-    max_val = max(original)
-    
-    return [x * (max_val - min_val) + min_val for x in normalized]
+def denormalize_value(value, min_val, max_val):
+    """Денормализует значение обратно в исходный диапазон"""
+    return value * (max_val - min_val) + min_val

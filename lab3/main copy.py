@@ -1,16 +1,13 @@
-from typing import List
-import numpy as np
-from neural_network import JordanElmanNetwork
-from utils import generate_sequences, log_transform_sequence, inverse_log_transform
+# Лабораторная работа №5 по дисциплине МРЗвИС
+# Вариант 10: Реализовать модель сети Джордана-Элмана с экспоненциально-линейной функцией активации (ELU).
+# Выполнил студенты группы 221701 БГУИР Абушкевич Алексей Александрович и Юркевич Марианна Сергеевна
+# Главный файл программы
+# Дата 28.11.2025
 
-WIN_SIZE = 2
-HIDDEN_SIZE = 4
-OUT_SIZE = 1
-RESET_CTX = False
-ALPHA = 1.0
-EPOCHS = 100000
-LEARNING_RATE = 0.01
-STEPS_TO_PREDICT = 4
+from neural_network import JordanElmanNetwork
+from utils import generate_sequences
+from config import WIN_SIZE, HIDDEN_SIZE, OUT_SIZE, RESET_CTX, ALPHA, EPOCHS, LEARNING_RATE, STEPS
+from utils import normalize_sequence, denormalize_value, log_transform_sequence, inverse_log_transform
 
 if __name__ == "__main__":
     sequences = generate_sequences()
