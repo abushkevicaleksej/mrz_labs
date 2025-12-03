@@ -69,8 +69,8 @@ class HopfieldNetwork:
             current_energy = self.calculate_energy(S)
             energy_history.append(current_energy)
 
-            energy_change = current_energy - energy_history[-2] if iter_count > 1 else 0
-            print(f"Итерация {iter_count}, энергия {current_energy:.4f}, изменение {energy_change:+.4f}")
+            # energy_change = current_energy - energy_history[-2] if iter_count > 1 else 0
+            print(f"Итерация {iter_count}, энергия {current_energy:.4f}")
 
             if np.array_equal(S, prev_S):
                 print(f"Достигнуто устойчивое состояние на итерации {iter_count}")

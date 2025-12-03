@@ -50,13 +50,14 @@ if __name__ == "__main__":
         get_absolute_path('pics/3_test.bmp'),
         get_absolute_path('pics/4_test.bmp'),
         get_absolute_path('pics/5_test.bmp'),
-        get_absolute_path('pics/6_test.bmp'),
-        get_absolute_path('pics/7_test.bmp'),
-        get_absolute_path('pics/8_test.bmp'),
+        # get_absolute_path('pics/6_test.bmp'),
+        # get_absolute_path('pics/7_test.bmp'),
+        # get_absolute_path('pics/8_test.bmp'),
     ]
     
     test_cases = [
-        (get_absolute_path('pics/8_test.bmp'), 0.0, "random", 100),
+        (get_absolute_path('pics/5_test.bmp'), 0.0, "both", 100),
+        
     ]
     
     for test_file, noise_level, noise_type, max_iter in test_cases:

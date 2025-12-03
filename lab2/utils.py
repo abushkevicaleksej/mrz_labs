@@ -85,8 +85,8 @@ def test_symbol_recognition(training_files, test_file, noise_level=0.3, noise_ty
     print(f"Размер изображения: {processor.image_size}")
     print(f"Ёмкость сети составляет: {capacity if n_neurons > 1 else 0:.2f}")
 
-    if capacity < len(patterns):
-        print(f"Количество образов превышает ёмкость сети: {capacity:.2f} < {len(patterns)}")
+    # if capacity < len(patterns):
+        # print(f"Количество образов превышает ёмкость сети: {capacity:.2f} < {len(patterns)}")
         # exit(1)
 
     network.train(patterns)
@@ -102,7 +102,7 @@ def test_symbol_recognition(training_files, test_file, noise_level=0.3, noise_ty
     test_name = os.path.basename(test_file)
     test_vector = processor.image_to_vector(test_img)
     
-    noisy_vector = processor.add_noise(test_vector, noise_level, noise_type)
+    noisy_vector = processor.add_noise(test_vector, 0.5, noise_type)
     
     print(f"\nРаспознавание изображения '{test_name}'")
     print(f"Максимальное количество итераций: {max_iterations}")
