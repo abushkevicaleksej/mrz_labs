@@ -1,12 +1,12 @@
 from typing import Callable
 import numpy as np
+import random
+random.seed(42)
+np.random.seed(42)
 
 class FCLayer:
     def __init__(self, input_size: int, output_size: int, activation: Callable):
-        # ИСПРАВЛЕНИЕ 1: Правильная инициализация весов (He Initialization)
-        # Это критически важно. Веса будут порядка ~0.3-0.5, а не 0.01
-        scale = np.sqrt(2.0 / input_size)
-        self.weights = np.random.randn(output_size, input_size) * scale
+        self.weights = np.random.uniform(low=-0.1, high=0.1, size=(output_size, input_size)).astype(np.float32)
         
         # ИСПРАВЛЕНИЕ 2: Добавление смещения (Bias)
         self.bias = np.zeros((output_size, 1))
@@ -24,19 +24,23 @@ class FCLayer:
         return self.output
     
     def backward(self, grad: np.ndarray, learning_rate: float) -> np.ndarray:
-        # Градиент по выходу функции активации
         dz = self.activation.backward(grad)
         
-        # Градиенты по весам, смещению и входу
         dw = np.dot(dz, self.input.T)
-        db = np.sum(dz, axis=1, keepdims=True) # Градиент для bias
+        db = dz  # Градиент для bias
+        
+        l2_lambda = 0.001
+        dw += l2_lambda * self.weights
+        
+        max_grad_norm = 1.0
+        grad_norm = np.sqrt(np.sum(dw**2) + np.sum(db**2))
+        if grad_norm > max_grad_norm:
+            dw = dw * max_grad_norm / grad_norm
+            db = db * max_grad_norm / grad_norm
+        
         dx = np.dot(self.weights.T, dz)
         
-        # Обновление параметров
         self.weights -= learning_rate * dw
         self.bias -= learning_rate * db
         
         return dx
-        
-    # Метод plot_uniform_weights можно удалить или оставить старым, 
-    # но он больше не отражает реальное распределение (теперь оно нормальное, а не uniform)

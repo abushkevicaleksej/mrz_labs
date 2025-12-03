@@ -4,6 +4,9 @@
 # Файл с реализацией вспомогательных функций
 # Дата 28.11.2025
 import numpy as np
+import random
+random.seed(42)
+np.random.seed(42)
 
 def generate_sequences() -> dict:
     sequences = {}
@@ -26,10 +29,10 @@ def generate_sequences() -> dict:
     
     sequences["squares"] = [i ** 2 for i in range(1, 16)]
     
-    fib = [1, 2]
-    for i in range(13):
+    fib = [0, 1]
+    for i in range(18):
         fib.append(fib[-1] + fib[-2])
-    sequences["fibonacci"] = fib[:15]
+    sequences["fibonacci"] = fib[:20]
     
     sequences["geometric_2"] = [2 ** i for i in range(15)]
     
@@ -69,3 +72,21 @@ def normalize_sequence(sequence):
 def denormalize_value(value, min_val, max_val):
     """Денормализует значение обратно в исходный диапазон"""
     return value * (max_val - min_val) + min_val
+
+def create_sliding_window_dataset(sequence, window_size, output_size, train_ratio=0.8):
+
+    n = len(sequence)
+    X, y = [], []
+    
+    for i in range(window_size, n - output_size + 1):
+        X.append(sequence[i - window_size:i])
+        y.append(sequence[i:i + output_size])
+    
+    split_idx = int(len(X) * train_ratio)
+    
+    X_train = np.array(X[:split_idx])
+    y_train = np.array(y[:split_idx])
+    X_test = np.array(X[split_idx:])
+    y_test = np.array(y[split_idx:])
+    
+    return (X_train, y_train), (X_test, y_test)
