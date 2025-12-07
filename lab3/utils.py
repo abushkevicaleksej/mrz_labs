@@ -4,9 +4,6 @@
 # Файл с реализацией вспомогательных функций
 # Дата 28.11.2025
 import numpy as np
-import random
-random.seed(42)
-np.random.seed(42)
 
 def generate_sequences() -> dict:
     sequences = {}
@@ -46,22 +43,13 @@ def generate_sequences() -> dict:
     return sequences
 
 def log_transform_sequence(sequence):
-    """
-    Применяет логарифмическое преобразование к последовательности.
-    Используется для последовательностей с экспоненциальным ростом (Фибоначчи).
-    """
-    # Используем натуральный логарифм, добавляем 1 для избежания log(0)
     return [np.log1p(x) for x in sequence]
 
 
 def inverse_log_transform(sequence_log):
-    """
-    Обратное логарифмическое преобразование.
-    """
     return [np.expm1(x) for x in sequence_log]
 
 def normalize_sequence(sequence):
-    """Нормализует последовательность в диапазон [0, 1]"""
     min_val = min(sequence)
     max_val = max(sequence)
     if max_val == min_val:
@@ -70,7 +58,6 @@ def normalize_sequence(sequence):
     return normalized, min_val, max_val
 
 def denormalize_value(value, min_val, max_val):
-    """Денормализует значение обратно в исходный диапазон"""
     return value * (max_val - min_val) + min_val
 
 def create_sliding_window_dataset(sequence, window_size, output_size, train_ratio=0.8):

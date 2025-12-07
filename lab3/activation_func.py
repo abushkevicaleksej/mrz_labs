@@ -1,40 +1,73 @@
 import numpy as np
-import random
-random.seed(42)
-np.random.seed(42)
 
 class ELU:
     def __init__(self, alpha: float = 1.0):
         self.alpha = alpha
-        self.input = None # Здесь храним Z (до активации)
+        self.input = None
+    
+    def _compute_forward(self, x: np.ndarray) -> np.ndarray:
+        """
+        f(x) = x, если x >= 0
+        f(x) = alpha * (exp(x) - 1), если x < 0
+        """
+        out = x.copy()
+        neg_mask = x < 0
+        
+        out[neg_mask] = self.alpha * (np.exp(x[neg_mask]) - 1)
+        
+        return out
+
+    def _compute_derivative(self, x: np.ndarray) -> np.ndarray:
+        """
+        f'(x) = 1, если x >= 0
+        f'(x) = alpha * exp(x), если x < 0
+        """
+        out = np.ones_like(x)
+        neg_mask = x < 0
+        
+        out[neg_mask] = self.alpha * np.exp(x[neg_mask])
+        
+        return out
     
     def forward(self, x: np.ndarray) -> np.ndarray:
         self.input = x.copy()
-        return np.where(x > 0, x, self.alpha * (np.exp(x) - 1))
+        return self._compute_forward(x)
     
-    def backward(self, grad: np.ndarray) -> np.ndarray:
-        # Производная ELU: 1, если x > 0, иначе alpha * exp(x)
-        # Важно: используем self.input (значение до активации), а не выход
-        derivative = np.where(self.input > 0, 1.0, self.alpha * np.exp(self.input))
-        return grad * derivative
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
+        return output_gradient * self._compute_derivative(self.input)
+
 
 class Tanh:
     def __init__(self):
         self.output = None
     
+    def _compute_forward(self, x: np.ndarray) -> np.ndarray:
+        return np.tanh(x)
+        
+    def _compute_derivative(self, output: np.ndarray) -> np.ndarray:
+        # Производная tanh выражается через значение функции: 1 - y^2
+        return 1 - output ** 2
+    
     def forward(self, x: np.ndarray) -> np.ndarray:
-        self.output = np.tanh(x)
+        self.output = self._compute_forward(x)
         return self.output
     
-    def backward(self, grad: np.ndarray) -> np.ndarray:
-        return grad * (1 - self.output ** 2)
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
+        return output_gradient * self._compute_derivative(self.output)
+
 
 class Linear:
     def __init__(self):
         pass
     
-    def forward(self, x: np.ndarray) -> np.ndarray:
+    def _compute_forward(self, x: np.ndarray) -> np.ndarray:
         return x
+        
+    def _compute_derivative(self, x: np.ndarray) -> float:
+        return 1.0
     
-    def backward(self, grad: np.ndarray) -> np.ndarray:
-        return grad
+    def forward(self, x: np.ndarray) -> np.ndarray:
+        return self._compute_forward(x)
+    
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
+        return output_gradient * self._compute_derivative(output_gradient)
