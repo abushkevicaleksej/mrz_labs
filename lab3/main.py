@@ -1,45 +1,26 @@
-import numpy as np
-from typing import List, Tuple
+# Лабораторная работа №5 по дисциплине МРЗвИС
+# Вариант 10: Реализовать модель сети Джордана-Элмана с экспоненциально-линейной функцией активации (ELU).
+# Выполнил студенты группы 221701 БГУИР Абушкевич Алексей Александрович и Юркевич Марианна Сергеевна
+# Главный файл программы
+# Дата 28.11.2025
+
 from neural_network import JordanElmanNetwork
-from utils import (
-    generate_sequences, 
-    train_test_split, 
-    preprocess_sequence, 
-    inverse_preprocess
-)
+from utils import generate_sequences
+from config import WIN_SIZE, HIDDEN_SIZE, OUT_SIZE, RESET_CTX, ALPHA, EPOCHS, LEARNING_RATE, STEPS
+from utils import normalize_sequence, denormalize_value, log_transform_sequence, inverse_log_transform
 
-WIN_SIZE = 3
-LEARNING_RATE = 0.001
-STEPS = 4
-HIDDEN_SIZE = 4
-OUT_SIZE = 1
-RESET_CTX = True
-ALPHA = 1.0
-EPOCHS = 100000
-
-def main():
+if __name__ == "__main__":
     sequences = generate_sequences()
-    
-    seq_name = "bell"
-    raw_sequence = sequences[seq_name]
-    
-    print("=" * 60)
-    print(f"Тестирование на последовательности: {seq_name}")
+
+    raw_sequence = sequences["squares"]
+    sequence, min_val, max_val = normalize_sequence(raw_sequence)
     print(f"Исходная последовательность: {raw_sequence}")
-    print("=" * 60)
-    
-    try:
-        train_seq_raw, test_seq_raw = train_test_split(raw_sequence, test_size=STEPS)
-    except ValueError as e:
-        print(f"Ошибка: {e}")
-        return
-    
-    train_seq, train_params = preprocess_sequence(train_seq_raw)
-    
-    print(f"  Размер окна: {WIN_SIZE}")
-    print(f"  Скрытый слой: {HIDDEN_SIZE} нейронов")
-    print(f"  Выходной слой: {OUT_SIZE} нейронов")
-    
+    print(f"Диапазон значений: от {min(raw_sequence)} до {max(raw_sequence)}")
+    sequence = log_transform_sequence(raw_sequence)
+
+    print(f"\nЛогарифмированная последовательность: {sequence}")
+    print(f"Диапазон логарифмированных значений: от {min(sequence):.4f} до {max(sequence):.4f}")
+
     network = JordanElmanNetwork(
         window_size=WIN_SIZE,
         hidden_size=HIDDEN_SIZE,
@@ -47,38 +28,25 @@ def main():
         context_reset=RESET_CTX,
         elu_alpha=ALPHA
     )
-    
-    print(f"\nНачало обучения ({EPOCHS} эпох)...")
-    network.train(train_seq, EPOCHS, LEARNING_RATE)
-    
-    train_loss = network.evaluate(train_seq)
-    print(f"\nСуммарная ошибка на обучающей выборке (MSE): {train_loss:.6f}")
-    
-    initial_window = train_seq[-WIN_SIZE:]
-    
-    predictions_scaled = network.predict(initial_window, STEPS)
-    predictions = inverse_preprocess(predictions_scaled, train_params)
-    
-    print(f"\n{'='*60}")
-    print("РЕЗУЛЬТАТЫ ПРОГНОЗИРОВАНИЯ")
-    print(f"{'='*60}")
-    
-    total_abs_error = 0
-    total_relative_error = 0
-    
-    for i, (pred, actual) in enumerate(zip(predictions, test_seq_raw), 1):
-        error = abs(pred - actual)
-        if actual != 0:
-            relative_error = abs(pred - actual) / abs(actual) * 100 
-        else:
-            relative_error = 0.0 if error < 1e-9 else 100.0
-            
-        total_abs_error += error
-        total_relative_error += relative_error
-        
-        print(f"Шаг {i}:")
-        print(f"  Прогноз: {pred:.4f}")
-        print(f"  Факт:    {actual:.4f}")
 
-if __name__ == "__main__":
-    main()
+    network.train(sequence, EPOCHS, LEARNING_RATE)
+
+    test_loss = network.evaluate(sequence)
+    print(f"\nСуммарная ошибка на тестовой выборке: {test_loss:.6}")
+
+    initial_window = sequence[:WIN_SIZE]
+    predictions_log = network.predict(initial_window, STEPS)
+
+    predictions = inverse_log_transform(predictions_log)
+
+    print(f"\nПрогнозируемые значения:")
+    for i, pred in enumerate(predictions, 1):
+        actual_idx = WIN_SIZE + i - 1
+        if actual_idx < len(raw_sequence):
+            actual = raw_sequence[actual_idx]
+            error = abs(pred - actual)
+            relative_error = abs(pred - actual) / actual * 100 if actual != 0 else 0
+            print(
+                f"Шаг {i}: Прогноз = {pred:.4f}, Факт = {actual:.4f}")
+        else:
+            print(f"Шаг {i}: Прогноз = {pred:.4f}")

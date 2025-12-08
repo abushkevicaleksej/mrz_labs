@@ -1,3 +1,9 @@
+# Лабораторная работа №5 по дисциплине МРЗвИС
+# Вариант 10: Реализовать модель сети Джордана-Элмана с экспоненциально-линейной функцией активации (ELU).
+# Выполнил студенты группы 221701 БГУИР Абушкевич Алексей Александрович и Юркевич Марианна Сергеевна
+# Файл с реализацией функций активаций
+# Дата 28.11.2025
+
 import numpy as np
 
 class ELU:
@@ -5,49 +11,28 @@ class ELU:
         self.alpha = alpha
         self.input = None
     
-    def _compute_forward(self, x: np.ndarray) -> np.ndarray:
-        """
-        f(x) = x, если x >= 0
-        f(x) = alpha * (exp(x) - 1), если x < 0
-        """
-        out = x.copy()
-        neg_mask = x < 0
-        
-        out[neg_mask] = self.alpha * (np.exp(x[neg_mask]) - 1)
-        
-        return out
-
-    def _compute_derivative(self, x: np.ndarray) -> np.ndarray:
-        """
-        f'(x) = 1, если x >= 0
-        f'(x) = alpha * exp(x), если x < 0
-        """
-        out = np.ones_like(x)
-        neg_mask = x < 0
-        
-        out[neg_mask] = self.alpha * np.exp(x[neg_mask])
-        
-        return out
-    
     def forward(self, x: np.ndarray) -> np.ndarray:
         self.input = x.copy()
-        return self._compute_forward(x)
+        return np.where(x >= 0, x, self.alpha * (np.exp(x) - 1))
     
-    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        return output_gradient * self._compute_derivative(self.input)
-
-class Linear:
-    def __init__(self):
-        pass
-    
-    def _compute_forward(self, x: np.ndarray) -> np.ndarray:
-        return x
+    def backward(self, grad: np.ndarray) -> np.ndarray:
+        if self.input is None:
+            raise ValueError("Необходимо сначала выполнить прямой проход")
         
-    def _compute_derivative(self, x: np.ndarray) -> float:
-        return 1.0
+        derivative = np.where(self.input >= 0, 1, self.alpha * np.exp(self.input))
+        return grad * derivative
+
+class Tanh:
+    
+    def __init__(self):
+        self.output = None
     
     def forward(self, x: np.ndarray) -> np.ndarray:
-        return self._compute_forward(x)
+        self.output = np.tanh(x)
+        return self.output
     
-    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        return output_gradient * self._compute_derivative(output_gradient)
+    def backward(self, grad: np.ndarray) -> np.ndarray:
+        if self.output is None:
+            raise ValueError("Необходимо сначала выполнить прямой проход")
+        
+        return grad * (1 - self.output ** 2)
