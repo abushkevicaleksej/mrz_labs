@@ -36,26 +36,6 @@ class ELU:
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         return output_gradient * self._compute_derivative(self.input)
 
-
-class Tanh:
-    def __init__(self):
-        self.output = None
-    
-    def _compute_forward(self, x: np.ndarray) -> np.ndarray:
-        return np.tanh(x)
-        
-    def _compute_derivative(self, output: np.ndarray) -> np.ndarray:
-        # Производная tanh выражается через значение функции: 1 - y^2
-        return 1 - output ** 2
-    
-    def forward(self, x: np.ndarray) -> np.ndarray:
-        self.output = self._compute_forward(x)
-        return self.output
-    
-    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        return output_gradient * self._compute_derivative(self.output)
-
-
 class Linear:
     def __init__(self):
         pass
