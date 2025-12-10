@@ -55,6 +55,8 @@ class JordanElmanNetwork:
         iteration = 0
         error = self.max_errors + 1.0
 
+        error_history = [] 
+
         while iteration < self.max_iters and error > self.max_errors:
             dW = np.zeros_like(self.W_in)
             dW_ = np.zeros_like(self.W_jordan)
@@ -141,13 +143,15 @@ class JordanElmanNetwork:
             self.W_out -= self.alpha * dW_O
 
             error = total_sq_error / len(self.expected)
+
+            error_history.append(error)
             iteration += 1
 
             if self.verbose and (iteration % 1000 == 0 or iteration == 1):
                 print(f"Итерация {iteration}, Ошибка: {error:.10f}")
 
         print(f"Обучение прошло за {iteration} итерации, ошибка = {error:.10f}")
-        return iteration
+        return iteration, error_history
 
     def predict(self):
         res = []

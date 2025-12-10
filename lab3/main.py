@@ -8,7 +8,7 @@ import numpy as np
 from neural_network import JordanElmanNetwork
 from utils import generate_sequences, zscore_denormalize, zscore_normalize
 
-SEQUENCE = "harmonic"
+SEQUENCE = "arithmetic"
 SEQ_SIZE = 11
 WIN_SIZE = 4
 CTX_SIZE = 3
