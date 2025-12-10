@@ -31,40 +31,15 @@ def generate_sequences() -> dict:
         fib.append(fib[-1] + fib[-2])
     sequences["fibonacci"] = fib[:15]
     
-    sequences["geometric_2"] = [2 ** i for i in range(15)]
-    
-    sequences["bell"] = [1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975][:10]
-    
-    factorial = [1]
-    for i in range(1, 15):
-        factorial.append(factorial[-1] * i)
-    sequences["factorial"] = factorial
-    
     return sequences
 
-def log_transform_sequence(sequence):
-    """
-    Применяет логарифмическое преобразование к последовательности.
-    Используется для последовательностей с экспоненциальным ростом (Фибоначчи).
-    """
-    return [np.log1p(x) for x in sequence]
+def zscore_normalize(seq):
+    arr = np.array(seq)
+    mean = np.mean(arr)
+    std = np.std(arr)
+    if std == 0: std = 1.0
+    norm = (arr - mean) / std
+    return norm, mean, std
 
-
-def inverse_log_transform(sequence_log):
-    """
-    Обратное логарифмическое преобразование.
-    """
-    return [np.expm1(x) for x in sequence_log]
-
-def normalize_sequence(sequence):
-    """Нормализует последовательность в диапазон [0, 1]"""
-    min_val = min(sequence)
-    max_val = max(sequence)
-    if max_val == min_val:
-        return [0.5] * len(sequence), min_val, max_val
-    normalized = [(x - min_val) / (max_val - min_val) for x in sequence]
-    return normalized, min_val, max_val
-
-def denormalize_value(value, min_val, max_val):
-    """Денормализует значение обратно в исходный диапазон"""
-    return value * (max_val - min_val) + min_val
+def zscore_denormalize(norm, mean, std):
+    return np.array(norm) * std + mean
